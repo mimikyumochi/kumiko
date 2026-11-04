@@ -35,6 +35,8 @@ class Hud(
     private val versionIndex = mutableStateOf(VERSIONS.indexOf(chunks.terrain.version))
 
     private var biomeAt: Pair<Any, Triple<Int, Int, Int>>? = null
+    private var pendingTitle: Long? = null
+    private var titleFrames = 0
     private var biome = ""
     private var tpField: TextFieldScope? = null
 
@@ -124,6 +126,12 @@ class Hud(
         }
 
         uiScene.onUpdate {
+            pendingTitle?.let { seed ->
+                if (--titleFrames <= 0) {
+                    pendingTitle = null
+                    setTitle(seed)
+                }
+            }
             coordinates.set(describePosition())
             if (messageTimer > 0f) {
                 messageTimer -= Time.deltaT
@@ -199,7 +207,8 @@ class Hud(
     private fun loadWorld(seed: Long, version: MCVersion) {
         chunks.reset(TerrainGenerator(BiomeSource(seed, version)))
         biomeAt = null
-        setTitle(seed)
+        pendingTitle = seed
+        titleFrames = 3
         showMessage("Loaded seed $seed for ${versionLabel(version)}")
     }
 

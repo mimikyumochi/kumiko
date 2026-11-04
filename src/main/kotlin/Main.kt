@@ -465,7 +465,7 @@ fun main() = KoolApplication(KoolConfigJvm(windowTitle = "kumiko - seed: $SEED")
 
     addScene {
         camera = FlyCamera(this)
-        camera.goTo(79.19, 42.00, 33.73, yaw = -404.66f, pitch = 7.65f)
+        camera.goTo(0.0, 200.0, 0.0, yaw = 0f, pitch = 90f)
 
         val world = Node("world")
         addNode(world)
