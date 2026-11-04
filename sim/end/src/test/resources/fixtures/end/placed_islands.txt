@@ -1,0 +1,7 @@
+# The small islands a chunk actually places (x:y:z:radius): its rolls that pass the biome filter,
+# checked with the zoomed biome at each island's own position. Unlike small_islands (rolls only),
+# this depends on biomes.
+# Source: in-game, fresh worlds.
+version  seed  chunkX  chunkZ  | islands
+# a the_end chunk whose island lands just inside zoomed small_end_islands (see zoomed_biomes)
+26.3     1     -60     -22     | -959:65:-337:4

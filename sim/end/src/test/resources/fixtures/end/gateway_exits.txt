@@ -1,0 +1,12 @@
+# Where a main-island gateway sends you: the outer gateway block the game builds on first use,
+# and the island it spawns there when the search finds no land (x:y:z:radius, or none).
+# n is the gateway's spawn number (1 = the first dragon kill's), as in gateway_order.
+# Source: in-game, a fresh world with the gateway placed by /setblock and flown into, checked
+# against the game's TheEndGatewayBlockEntity debug log ("Creating portal at BlockPos{...}").
+# Island radius was counted in-game: 6 blocks from centre to edge, centre included = radius 5.
+version  seed  n   | x    y    z     island
+# Lands on terrain. Checks vanilla's MutableBlockPos aliasing in findValidSpawnInChunk: the
+# search lands on (-1, 47, 1071), the chunk's last corner, not the closest end stone (-1, 32, 1064).
+26.3     1     1   | 7    69   1087  none
+# No land in the chunk found: spawns an island at y 75, seeded with its own position.
+26.3     4     12  | -16  85   1053  -11:75:1056:5

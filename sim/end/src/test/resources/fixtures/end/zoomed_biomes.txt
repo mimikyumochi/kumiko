@@ -1,0 +1,9 @@
+# The biome at a block as the game looks it up (BiomeManager.getBiome, the "fuzzy zoom"): what
+# F3 shows and what feature biome filters check. Near a chunk border it can be the neighbour's.
+# Source: in-game F3, fresh worlds. Use an instance WITHOUT TerraBlender: it replaces the End's
+# per-chunk biome with one per 4x4 quart (MixinTheEndBiomeSource), so its F3 and features differ
+# from vanilla near biome borders. The row below agrees under both, so it was kept.
+version  seed  x     y   z     | biome
+# chunk -60, -22 is the_end (inside the 64-chunk circle), but this block zooms into chunk -61's
+# small_end_islands; one block further along it's the_end
+26.3     1     -959  65  -337  | small_end_islands

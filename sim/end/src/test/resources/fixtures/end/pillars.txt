@@ -1,0 +1,16 @@
+# End pillars (obsidian spikes) for a seed: slot i around the main island's circle.
+# x, z: the bedrock block on top. height: the bedrock's y (the obsidian stops at height - 1).
+# guarded: whether it has an iron bar cage.
+# Measured in-game by hand: every x, z, height and guarded value. Radius was counted on
+# the height-103 (r=5) and height-100 (r=4) pillars; the others follow from radius = 2 + size/3.
+seed                    i   | x     z     radius  height  guarded
+5580935360816826123     0   | 42    0     4       100     false
+5580935360816826123     1   | 33    24    3       91      false
+5580935360816826123     2   | 12    39    4       94      false
+5580935360816826123     3   | -13   39    4       97      false
+5580935360816826123     4   | -34   24    2       79      true
+5580935360816826123     5   | -42   -1    5       103     false
+5580935360816826123     6   | -34   -25   2       76      false
+5580935360816826123     7   | -13   -40   3       85      false
+5580935360816826123     8   | 12    -40   3       88      false
+5580935360816826123     9   | 33    -25   2       82      true

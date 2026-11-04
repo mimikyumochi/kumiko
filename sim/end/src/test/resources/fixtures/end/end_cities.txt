@@ -1,0 +1,42 @@
+# End city per region (spacing 20, separation 11): its chunk, whether the biome allows it,
+# whether the terrain check passes (`none` when the biome fails), and whether it has a ship
+# (`none` when it doesn't generate). Source: SeedFinding mc_feature 1.16.5.
+# Valid for 1.13 - 1.18; 1.19+ samples terrain with the city's own rotation.
+version  seed    regionX  regionZ  | chunkX  chunkZ  biome   terrain  ship
+1.16    0       -10     -10     | -196    -197    false   none    none
+1.16    0       -10     -5      | -196    -99     false   none    none
+1.16    0       -10     0       | -197    1       true    false   none
+1.16    0       -5      -5      | -94     -100    true    true    false
+1.16    0       -4      -4      | -77     -79     true    true    false
+1.16    0       -2      -7      | -34     -136    true    true    false
+1.16    0       5       10      | 103     205     true    true    false
+1.16    0       6       -9      | 125     -177    true    true    true
+1.16    4       -10     -8      | -197    -157    false   none    none
+1.16    4       -10     -3      | -197    -57     false   none    none
+1.16    4       -10     2       | -198    44      true    false   none
+1.16    4       -7      -10     | -137    -199    true    true    false
+1.16    4       -5      7       | -99     140     true    true    false
+1.16    4       8       5       | 166     106     true    true    true
+1.16    4       8       10      | 164     204     true    true    true
+1.16    4       10      -3      | 206     -55     true    true    true
+1.16    -6243685378508790499  -10     -7      | -195    -135    false   none    none
+1.16    -6243685378508790499  -10     -2      | -199    -35     true    false   none
+1.16    -6243685378508790499  -10     3       | -196    62      false   none    none
+1.16    -6243685378508790499  -5      3       | -94     64      true    true    false
+1.16    -6243685378508790499  -4      -1      | -77     -15     true    true    false
+1.16    -6243685378508790499  -4      9       | -75     185     true    true    true
+1.16    -6243685378508790499  1       -6      | 24      -117    true    true    true
+1.16    -6243685378508790499  5       -2      | 103     -34     true    true    false
+1.16    -6243685378508790499  6       -6      | 125     -116    true    true    true
+1.16    -6243685378508790499  7       0       | 145     4       true    true    false
+1.16    123456789  -10     -8      | -195    -154    false   none    none
+1.16    123456789  -10     -3      | -196    -57     true    false   none
+1.16    123456789  -10     2       | -196    45      false   none    none
+1.16    123456789  -2      -10     | -40     -193    true    true    false
+1.16    123456789  -2      -5      | -35     -97     true    true    false
+1.16    123456789  -1      -9      | -15     -175    true    true    false
+1.16    123456789  0       -8      | 4       -153    true    true    true
+1.16    123456789  1       3       | 24      65      true    true    false
+1.16    123456789  1       8       | 26      166     true    true    true
+1.16    123456789  2       -6      | 47      -118    true    true    true
+1.16    123456789  2       9       | 43      183     true    true    true

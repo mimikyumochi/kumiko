@@ -1,0 +1,7 @@
+# A block inside an end city: the state name the city's pieces leave at that position (later
+# pieces overwrite earlier ones), or none outside every piece. Checks the city's start position,
+# rotation and every piece offset on the way there.
+# Source: in-game F3 (targeted block), fresh worlds.
+version  seed  x      y    z     | block
+# on the ship's bow: the far end of the piece chain
+26.3     1     -1157  159  -353  | minecraft:dragon_wall_head

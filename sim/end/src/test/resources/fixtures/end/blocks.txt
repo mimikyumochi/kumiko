@@ -1,0 +1,44 @@
+# Single blocks: end_stone or air. 1.19 rows cover 1.13 - 26.2 (double density),
+# 26.3 rows cover the float density path. Source: in-game checks.
+version  seed  x    y   z    | block
+# Seen as air in a 26.3 world. The old-units density is +0.021 without vanilla's 1.0E-7
+# fudge epsilon in ImprovedNoise (as cubiomes / SeedFinding compute it), negative with it.
+26.3     1     96   53  96   | air
+1.19     1     96   53  96   | air
+# The one block (of ~44M checked on seeds 0, 1, 4) where float and double density disagree.
+# In-game: end_stone in 26.3, air in older versions.
+26.3     1     55   60  -21  | end_stone
+1.19     1     55   60  -21  | air
+1.16     1     55   60  -21  | air
+# Top block of a heights.txt row corrected for the epsilon (SeedFinding said 48).
+# In-game: the top block is y 43 in 26.3.
+26.3     0     -2399  43  1081  | end_stone
+26.3     0     -2399  44  1081  | air
+26.3     0     -2399  48  1081  | air
+# Far column (overflowed int x²+z² is still positive here, so the main island clamps to -100
+# in every version). In-game: top block is y 52 in 26.2 and 26.3 (SeedFinding said 53).
+26.3     0     1000150  52  999850  | end_stone
+26.3     0     1000150  53  999850  | air
+1.19     0     1000150  52  999850  | end_stone
+1.19     0     1000150  53  999850  | air
+# MC-159283 void: the int x²+z² wraps negative, so 26.2 and older get NaN density (all air).
+# 26.3 has a float distance and keeps the outer island here. In-game: void in 26.2, land in 26.3.
+1.19     0     380032  56  0    | air
+26.3     0     380032  56  0    | end_stone
+26.3     0     380032  57  0    | air
+# MC-159283 ring sliver at noise cell x 65536 (65536² = 2^32 wraps to 0). The cell at -x is NaN
+# (air), the one at +x is too far for an island, so the copy is a wall about 6 blocks thick
+# with a flat -x face. In-game: present in 26.2 with these heights, absent in 26.3.
+1.19     0     524287  62  0    | air
+1.19     0     524288  62  0    | end_stone
+1.19     0     524288  63  0    | air
+1.19     0     524293  47  0    | end_stone
+1.19     0     524293  48  0    | air
+1.19     0     524294  47  0    | air
+1.19     0     524292  39  32   | end_stone
+1.19     0     524292  40  32   | air
+1.19     0     524289  52  -96  | end_stone
+1.19     0     524290  52  -96  | air
+1.19     0     524288  60  64   | air
+26.3     0     524288  62  0    | air
+26.3     0     524288  40  0    | air
