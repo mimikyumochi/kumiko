@@ -1,6 +1,6 @@
 package faith.mimikyumochi.end.structures
 
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.end.biome.EndBiomeSource
 import faith.mimikyumochi.core.rand.Rand
 import faith.mimikyumochi.core.rand.Xoroshiro128PlusPlus
 import faith.mimikyumochi.core.version.MCVersion
@@ -21,7 +21,7 @@ class SmallEndIsland(val version: MCVersion = MCVersion.LATEST) {
     val salt = 0
     val chance = 14
 
-    fun getPlacedIslands(chunkX: Int, chunkZ: Int, biomeSource: BiomeSource): List<Island> {
+    fun getPlacedIslands(chunkX: Int, chunkZ: Int, biomeSource: EndBiomeSource): List<Island> {
         if (version < MCVersion.V1_18) {
             val biome = biomeSource.sampleBiome((chunkX shl 2) + 2, (chunkZ shl 2) + 2)
             return if (biome == BIOME) getIslands(chunkX, chunkZ, biomeSource.worldSeed) else emptyList()
@@ -113,6 +113,6 @@ class SmallEndIsland(val version: MCVersion = MCVersion.LATEST) {
         return layers
     }
 
-    fun canStart(chunkX: Int, chunkZ: Int, biomeSource: BiomeSource): Boolean =
+    fun canStart(chunkX: Int, chunkZ: Int, biomeSource: EndBiomeSource): Boolean =
         getPlacedIslands(chunkX, chunkZ, biomeSource).isNotEmpty()
 }

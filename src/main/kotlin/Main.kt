@@ -9,7 +9,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.scene.Node
 import faith.mimikyumochi.core.block.CPos
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.core.version.MCVersion
 import faith.mimikyumochi.end.features.EndPillars
 import faith.mimikyumochi.end.features.EndPodium
 import faith.mimikyumochi.end.features.GatewayExit
@@ -24,7 +24,7 @@ import faith.mimikyumochi.end.structures.SmallEndIsland
 import faith.mimikyumochi.end.structures.ChorusPlant
 import faith.mimikyumochi.core.block.BPos
 import faith.mimikyumochi.core.block.BlockDirection
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
 
 const val SEED = 1L
 
@@ -41,12 +41,15 @@ const val WALL_TORCH_SOUTH = 6
 const val WALL_TORCH_WEST = 7
 const val WALL_TORCH_EAST = 8
 const val END_GATEWAY = 9
+const val NETHERRACK = CITY_ENTITY_LAST + 1
+const val LAVA = CITY_ENTITY_LAST + 2
 
 val BLOCK_TEXTURES = listOf(
     "block/end_stone", "block/obsidian", "block/bedrock", "block/iron_bars", "block/torch",
     "block/purpur_block", "block/end_stone_bricks", "block/purpur_pillar_side", "block/purpur_pillar_top", "block/magenta_stained_glass",
     "block/end_rod", "block/ladder", "block/chorus_plant", "block/chorus_flower_dead",
     "block/brewing_stand", "block/brewing_stand_base", "block/item_frame", "block/birch_planks", "item/elytra",
+    "block/netherrack",
 )
 
 val ATLAS_TILES: Int get() = BLOCK_TEXTURES.size + CityEntityModels.cuts.size
@@ -65,6 +68,7 @@ fun blockTile(block: Int, face: Int = 0): Int = when (block) {
     in LADDER_NORTH..LADDER_EAST -> 11
     CHORUS_PLANT -> 12
     CHORUS_FLOWER -> 13
+    NETHERRACK -> 19
     else -> 0
 }
 
@@ -84,7 +88,7 @@ fun pillarSideUv(block: Int, face: Face, u: Float, v: Float, out: MutableVec2f):
 }
 
 fun isOpaque(block: Int): Boolean = when (block) {
-    END_STONE, OBSIDIAN, BEDROCK, PURPUR_BLOCK, END_STONE_BRICKS, PURPUR_PILLAR_X, PURPUR_PILLAR_Y, PURPUR_PILLAR_Z -> true
+    END_STONE, OBSIDIAN, BEDROCK, PURPUR_BLOCK, END_STONE_BRICKS, PURPUR_PILLAR_X, PURPUR_PILLAR_Y, PURPUR_PILLAR_Z, NETHERRACK -> true
     else -> false
 }
 
@@ -93,7 +97,7 @@ const val INNER_GATEWAY_Y = 75
 class InnerGateway(val x: Int, val z: Int, val number: Int)
 
 class IslandFeatures(
-    private val terrain: TerrainGenerator,
+    private val terrain: EndTerrainGenerator,
     val showExits: Boolean = false,
 ) {
     val pillars = EndPillars.getPillarsForSeed(terrain.worldSeed)
@@ -239,7 +243,7 @@ class Chunk(val pos: CPos, private val blocks: Array<Array<IntArray>>) {
         get() = (1..CHUNK_WIDTH).all { x -> (1..CHUNK_WIDTH).all { z -> blocks[x][z].all { it == AIR } } }
 }
 
-fun generateChunk(chunkX: Int, chunkZ: Int, terrain: TerrainGenerator, features: IslandFeatures): Chunk {
+fun generateChunk(chunkX: Int, chunkZ: Int, terrain: EndTerrainGenerator, features: IslandFeatures): Chunk {
     val originX = chunkX * CHUNK_WIDTH - 1
     val originZ = chunkZ * CHUNK_WIDTH - 1
     val blocks = generateBase(originX, originZ, CHUNK_WIDTH + 2, terrain, features)
@@ -273,7 +277,7 @@ private fun stampEndPlatform(blocks: Array<Array<IntArray>>, originX: Int, origi
     }
 }
 
-fun generateBase(originX: Int, originZ: Int, size: Int, terrain: TerrainGenerator, features: IslandFeatures): Array<Array<IntArray>> {
+fun generateBase(originX: Int, originZ: Int, size: Int, terrain: EndTerrainGenerator, features: IslandFeatures): Array<Array<IntArray>> {
     val blocks = Array(size) { x ->
         Array(size) { z -> terrain.generateColumn(originX + x, originZ + z).toIntArray().copyOf(WORLD_HEIGHT) }
     }
@@ -457,6 +461,7 @@ val FACES = listOf(
 fun main() = KoolApplication(KoolConfigJvm(windowTitle = "kumiko - seed: $SEED")) {
     val blockAtlas = loadBlockAtlas()
     val portalShader = PortalShader.load().apply { fogColor = SKY_COLOUR }
+    val lavaShader = LavaShader.load().apply { fogColor = SKY_COLOUR }
 
     lateinit var camera: FlyCamera
     lateinit var chunks: ChunkManager
@@ -474,7 +479,7 @@ fun main() = KoolApplication(KoolConfigJvm(windowTitle = "kumiko - seed: $SEED")
         val blockShader = BlockShader(blockAtlas, ATLAS_TILES).apply { fogColor = SKY_COLOUR }
         val glassShader = BlockShader(blockAtlas, ATLAS_TILES, translucent = true).apply { fogColor = SKY_COLOUR }
 
-        chunks = ChunkManager(world, blockShader, portalShader, glassShader, camera, TerrainGenerator(BiomeSource(SEED)))
+        chunks = ChunkManager(world, blockShader, portalShader, glassShader, lavaShader, camera, Dimension.END.terrain(SEED, MCVersion.LATEST))
         onUpdate { chunks.update() }
         gatewayLabels = GatewayLabels(world, camera, chunks, blockShader)
 

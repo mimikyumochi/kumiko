@@ -3,11 +3,11 @@ package faith.mimikyumochi.end.features
 import faith.mimikyumochi.core.block.BPos
 import faith.mimikyumochi.core.rand.Rand
 import faith.mimikyumochi.end.structures.SmallEndIsland
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
 import kotlin.math.floor
 import kotlin.math.sqrt
 
-class GatewayExit(private val terrain: TerrainGenerator) {
+class GatewayExit(private val terrain: EndTerrainGenerator) {
     data class Exit(val pos: BPos, val island: SmallEndIsland.Island?)
 
     private val islands = SmallEndIsland(terrain.version)

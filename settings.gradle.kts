@@ -3,7 +3,7 @@ plugins {
 }
 rootProject.name = "Kumiko"
 
-val simModules = listOf("core", "end")
+val simModules = listOf("core", "end", "nether")
 for (name in simModules) {
     include(name)
     project(":$name").projectDir = file("sim/$name")

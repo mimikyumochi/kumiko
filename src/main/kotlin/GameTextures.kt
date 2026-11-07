@@ -9,15 +9,18 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
 object GameTextures {
-    operator fun get(path: String): BufferedImage {
-        val bytes = VanillaAssets.read("assets/minecraft/textures/$path.png")
-            ?: error("no texture $path in ${VanillaAssets.default.name}")
-        val img = ImageIO.read(bytes.inputStream()) ?: error("unreadable texture $path")
-        return if (img.height > img.width) img.getSubimage(0, 0, img.width, img.width) else img
+    operator fun get(path: String): BufferedImage = read(path).let { img ->
+        if (img.height > img.width) img.getSubimage(0, 0, img.width, img.width) else img
     }
 
-    fun imageData(path: String): BufferedImageData2d {
-        val image = get(path)
+    private fun read(path: String): BufferedImage {
+        val bytes = VanillaAssets.read("assets/minecraft/textures/$path.png")
+            ?: error("no texture $path in ${VanillaAssets.default.name}")
+        return ImageIO.read(bytes.inputStream()) ?: error("unreadable texture $path")
+    }
+
+    fun imageData(path: String, allFrames: Boolean = false): BufferedImageData2d {
+        val image = if (allFrames) read(path) else get(path)
         val pixels = Uint8Buffer(image.width * image.height * 4)
         val gray = image.colorModel.colorSpace.type == ColorSpace.TYPE_GRAY
         val raster = image.raster

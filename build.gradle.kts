@@ -14,6 +14,7 @@ dependencies {
 
     implementation(project(":core"))
     implementation(project(":end"))
+    implementation(project(":nether"))
 }
 
 kotlin {

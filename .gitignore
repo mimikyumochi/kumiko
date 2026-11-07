@@ -45,4 +45,6 @@ bin/
 # F2 screenshots
 screenshots/
 end_map.png
+nether_map.png
+nether_slice.png
 *.part

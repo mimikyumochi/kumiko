@@ -47,7 +47,7 @@ this builds `build/dist/kumiko.jar`, which runs the same way as the downloaded o
 to run the tests:
 
 ```
-./gradlew :core:test :end:test
+./gradlew :core:test :end:test :nether:test
 ```
 
 ## Supported Dimensions

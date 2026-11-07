@@ -2,7 +2,7 @@ package faith.mimikyumochi.end.structures
 
 import faith.mimikyumochi.core.rand.Xoroshiro128PlusPlus
 import faith.mimikyumochi.core.version.MCVersion
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.end.biome.EndBiomeSource
 import kotlin.math.abs
 
 class ChorusPlant(val version: MCVersion = MCVersion.LATEST) {
@@ -20,7 +20,7 @@ class ChorusPlant(val version: MCVersion = MCVersion.LATEST) {
 
     val isSupported: Boolean get() = version >= MCVersion.V1_18
 
-    fun generate(chunkX: Int, chunkZ: Int, worldSeed: Long, biomeSource: BiomeSource, world: World): List<Block> =
+    fun generate(chunkX: Int, chunkZ: Int, worldSeed: Long, biomeSource: EndBiomeSource, world: World): List<Block> =
         generate(chunkX, chunkZ, worldSeed, world) { x, y, z -> biomeSource.biomeAt(x, y, z) }
 
     fun generate(chunkX: Int, chunkZ: Int, worldSeed: Long, world: World, biomeAt: (Int, Int, Int) -> String): List<Block> {

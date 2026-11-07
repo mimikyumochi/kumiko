@@ -1,6 +1,6 @@
 package faith.mimikyumochi.end.structures
 
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.end.biome.EndBiomeSource
 import faith.mimikyumochi.core.block.BPos
 import faith.mimikyumochi.core.rand.Rand
 import faith.mimikyumochi.core.rand.Xoroshiro128PlusPlus
@@ -23,7 +23,7 @@ class EndGateway(val version: MCVersion = MCVersion.LATEST) {
     }
     val chance = 700
 
-    fun getEndIslandGatewayOrder(biomeSource: BiomeSource): IntArray {
+    fun getEndIslandGatewayOrder(biomeSource: EndBiomeSource): IntArray {
         val order = IntArray(linkedGateways.size) { it }
 
         val rand = Rand(biomeSource.worldSeed)
@@ -70,11 +70,11 @@ class EndGateway(val version: MCVersion = MCVersion.LATEST) {
         return Pos(x, offsetY, z)
     }
 
-    fun isPlacedAt(x: Int, y: Int, z: Int, biomeSource: BiomeSource): Boolean =
+    fun isPlacedAt(x: Int, y: Int, z: Int, biomeSource: EndBiomeSource): Boolean =
         if (version >= MCVersion.V1_18) biomeSource.biomeAt(x, y, z) == "end_highlands"
         else biomeSource.sampleBiome((x shr 4 shl 2) + 2, (z shr 4 shl 2) + 2) == "end_highlands"
 
-    fun canStart(chunkX: Int, chunkZ: Int, biomeSource: BiomeSource): Boolean {
+    fun canStart(chunkX: Int, chunkZ: Int, biomeSource: EndBiomeSource): Boolean {
         getPos(chunkX, chunkZ, biomeSource.worldSeed) ?: return false
 
         return biomeSource.sampleBiome((chunkX shl 2) + 2, (chunkZ shl 2) + 2) == "end_highlands"

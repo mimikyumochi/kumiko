@@ -1,12 +1,12 @@
 package faith.mimikyumochi.end.features
 
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
 
 object EndPodium {
     const val X = 0
     const val Z = 0
 
-    fun getY(terrain: TerrainGenerator): Int = maxOf(1, terrain.getHeight(X, Z))
+    fun getY(terrain: EndTerrainGenerator): Int = maxOf(1, terrain.getHeight(X, Z))
 
     enum class Part { BEDROCK, END_STONE, AIR, PORTAL }
 

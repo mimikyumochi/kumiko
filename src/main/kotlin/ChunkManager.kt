@@ -9,7 +9,9 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.releaseDelayed
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.core.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
+import faith.mimikyumochi.nether.terrain.NetherTerrainGenerator
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -20,13 +22,14 @@ class ChunkManager(
     private val shader: BlockShader,
     private val portalShader: PortalShader,
     private val glassShader: BlockShader,
+    private val lavaShader: LavaShader,
     private val camera: FlyCamera,
     terrain: TerrainGenerator,
 ) {
     var terrain = terrain
         private set
 
-    var features = IslandFeatures(terrain)
+    var features = islandFeatures(terrain, false)
         private set
 
     var showExits = false
@@ -45,7 +48,7 @@ class ChunkManager(
         Thread(task, "chunk-gen").apply { isDaemon = true; priority = Thread.MIN_PRIORITY }
     }
 
-    private class Geometry(val blocks: IndexedVertexList<*>?, val portals: IndexedVertexList<*>?, val glass: IndexedVertexList<*>? = null)
+    private class Geometry(val blocks: IndexedVertexList<*>?, val portals: IndexedVertexList<*>?, val glass: IndexedVertexList<*>? = null, val lava: IndexedVertexList<*>? = null)
 
     private class Generated(val generation: Int, val key: Long, val geometry: Geometry)
 
@@ -67,13 +70,14 @@ class ChunkManager(
         loaded.values.forEach { it.forEach(::unloadMesh) }
         loaded.clear()
         terrain = newTerrain
-        features = IslandFeatures(newTerrain, showExits)
+        features = islandFeatures(newTerrain, showExits)
         centreKey = null
     }
 
     fun update() {
         updateFog()
         portalShader.update()
+        lavaShader.update()
         val centreX = floor(camera.position.x / CHUNK_WIDTH).toInt()
         val centreZ = floor(camera.position.z / CHUNK_WIDTH).toInt()
         val centre = key(centreX, centreZ)
@@ -119,13 +123,22 @@ class ChunkManager(
         for (key in wanted) {
             pending[key] = workers.submit {
                 try {
-                    val chunk = generateChunk(keyX(key), keyZ(key), terrain, features)
+                    val chunk = generate(keyX(key), keyZ(key), terrain, features)
                     generated += Generated(generation, key, if (chunk.isEmpty) Geometry(null, null) else buildGeometry(chunk))
                 } catch (e: Exception) {
                     System.err.println("Couldn't generate chunk ${keyX(key)}, ${keyZ(key)}: $e")
                 }
             }
         }
+    }
+
+    private fun islandFeatures(terrain: TerrainGenerator, showExits: Boolean): IslandFeatures? =
+        (terrain as? EndTerrainGenerator)?.let { IslandFeatures(it, showExits) }
+
+    private fun generate(chunkX: Int, chunkZ: Int, terrain: TerrainGenerator, features: IslandFeatures?): Chunk = when (terrain) {
+        is EndTerrainGenerator -> generateChunk(chunkX, chunkZ, terrain, features!!)
+        is NetherTerrainGenerator -> generateNetherChunk(chunkX, chunkZ, terrain)
+        else -> error("no chunks for ${terrain::class.simpleName}")
     }
 
     private fun updateFog() {
@@ -136,6 +149,8 @@ class ChunkManager(
         portalShader.fogStart = shader.fogStart
         glassShader.fogEnd = shader.fogEnd
         glassShader.fogStart = shader.fogStart
+        lavaShader.fogEnd = shader.fogEnd
+        lavaShader.fogStart = shader.fogStart
     }
 
     private fun buildMeshes() {
@@ -148,6 +163,7 @@ class ChunkManager(
                 done.geometry.blocks?.let { addMesh(it, name, shader) },
                 done.geometry.portals?.let { addMesh(it, "$name gateways", portalShader) },
                 done.geometry.glass?.let { addMesh(it, "$name glass", glassShader).apply { drawGroupId = GLASS_DRAW_GROUP } },
+                done.geometry.lava?.let { addMesh(it, "$name lava", lavaShader) },
             )
         }
     }
@@ -163,10 +179,12 @@ class ChunkManager(
         val solid = IndexedVertexList(VertexLayouts.PositionNormalTexCoordColor)
         val glass = IndexedVertexList(VertexLayouts.PositionNormalTexCoordColor)
         val portals = IndexedVertexList(VertexLayouts.PositionNormalTexCoordColor)
+        val lava = IndexedVertexList(VertexLayouts.PositionNormalTexCoordColor)
         val colour = MutableColor(1f, 1f, 1f, 1f)
         val solidBuilder = MeshBuilder(solid).apply { color = colour }
         val glassBuilder = MeshBuilder(glass).apply { color = colour }
         val portalBuilder = MeshBuilder(portals)
+        val lavaBuilder = MeshBuilder(lava).apply { color = colour }
         val originX = chunk.pos.x * CHUNK_WIDTH
         val originZ = chunk.pos.z * CHUNK_WIDTH
         val corner = MutableVec3f()
@@ -232,12 +250,29 @@ class ChunkManager(
                 }
                 continue
             }
+            if (block == LAVA) {
+                val height = if (chunk.blockAt(x, y + 1, z) == LAVA) 1f else LAVA_HEIGHT
+                for (face in FACES) {
+                    val neighbour = chunk.blockAt(x + face.dx, y + face.dy, z + face.dz)
+                    if (neighbour == LAVA || (isOpaque(neighbour) && face.dy <= 0)) continue
+                    colour.set(face.brightness, face.brightness, face.brightness, 1f)
+                    for (i in 0 until 4) {
+                        val c = face.corners[i]
+                        val t = face.uvs[i]
+                        index[i] = lavaBuilder.vertex(corner.set(originX + x + c.x, y + c.y * height, originZ + z + c.z), face.normal, uv.set(t.x, t.y))
+                    }
+                    lavaBuilder.addTriIndices(index[0], index[1], index[2])
+                    lavaBuilder.addTriIndices(index[0], index[2], index[3])
+                }
+                continue
+            }
             val isGlass = block == MAGENTA_STAINED_GLASS
             val b = if (isGlass) glassBuilder else solidBuilder
             for (face in FACES) {
                 val neighbour = chunk.blockAt(x + face.dx, y + face.dy, z + face.dz)
                 if (isOpaque(neighbour)) continue
                 if (isGlass && neighbour == block) continue
+                if (neighbour == LAVA && (face.dy > 0 || chunk.blockAt(x + face.dx, y + face.dy + 1, z + face.dz) == LAVA)) continue
 
                 for (i in 0 until 4) {
                     val n = face.aoNeighbours[i]
@@ -269,6 +304,7 @@ class ChunkManager(
             solid.takeIf { it.numIndices > 0 },
             portals.takeIf { it.numIndices > 0 },
             glass.takeIf { it.numIndices > 0 },
+            lava.takeIf { it.numIndices > 0 },
         )
     }
 
@@ -281,6 +317,8 @@ class ChunkManager(
         const val MESH_BUDGET_NANOS = 4_000_000L
 
         const val GLASS_DRAW_GROUP = 1
+
+        const val LAVA_HEIGHT = 8f / 9f
 
         fun key(x: Int, z: Int): Long = (x.toLong() shl 32) or (z.toLong() and 0xFFFFFFFFL)
         fun keyX(key: Long): Int = (key shr 32).toInt()

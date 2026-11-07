@@ -22,6 +22,8 @@ object FloatMth {
 
     fun floorToInt(d: Double): Int = floor(d).toInt()
 
+    val SIN = FloatArray(65536) { Math.sin(it / 10430.378350470453).toFloat() }
+
     private val HALF_ROUND_OFF = Math.nextDown(1.6777216E7)
 
     fun wrap(v: Double): Double {

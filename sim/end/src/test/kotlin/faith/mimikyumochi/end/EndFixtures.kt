@@ -2,19 +2,19 @@ package faith.mimikyumochi.end
 
 import faith.mimikyumochi.core.testkit.FixtureSuite
 import faith.mimikyumochi.core.version.MCVersion
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.end.biome.EndBiomeSource
 import faith.mimikyumochi.end.features.EndPillars
 import faith.mimikyumochi.end.features.GatewayExit
 import faith.mimikyumochi.end.structures.EndCity
 import faith.mimikyumochi.end.structures.EndCityGenerator
 import faith.mimikyumochi.end.structures.EndGateway
 import faith.mimikyumochi.end.structures.SmallEndIsland
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
 import kotlin.test.Test
 
 class EndFixtures : FixtureSuite("end") {
-    private val biomes = memo { key: Pair<Long, MCVersion> -> BiomeSource(key.first, key.second) }
-    private val terrain = memo { key: Pair<Long, MCVersion> -> TerrainGenerator(biomes(key)) }
+    private val biomes = memo { key: Pair<Long, MCVersion> -> EndBiomeSource(key.first, key.second) }
+    private val terrain = memo { key: Pair<Long, MCVersion> -> EndTerrainGenerator(biomes(key)) }
 
     init {
         check("biomes") { row ->

@@ -1,22 +1,32 @@
-package faith.mimikyumochi.end.terrain
+package faith.mimikyumochi.core.terrain
 
 import faith.mimikyumochi.core.Utils
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.core.biome.BiomeSource
 import faith.mimikyumochi.core.noise.OctavePerlinNoise
 import faith.mimikyumochi.core.rand.Rand
 import faith.mimikyumochi.core.version.MCVersion
 
-class TerrainGenerator(val biomeSource: BiomeSource, val version: MCVersion = biomeSource.version) {
-    val worldSeed = biomeSource.worldSeed
+data class NoiseSampling(val xzScale: Double, val yScale: Double, val xzFactor: Double, val yFactor: Double)
+
+abstract class TerrainGenerator(
+    val worldSeed: Long,
+    val version: MCVersion,
+    sampling: NoiseSampling,
+    val worldHeight: Int,
+    val chunkWidth: Int,
+    val chunkHeight: Int,
+) {
+    abstract val biomeSource: BiomeSource
 
     val defaultBlock = 1
     val defaultFluid = 0
-    val worldHeight = 128
 
-    val chunkWidth = 8
-    val chunkHeight = 4
+    val noiseSizeY = worldHeight / chunkHeight
 
-    val noiseSizeY = 32
+    private val xzScale = 684.412 * sampling.xzScale
+    private val yScale = 684.412 * sampling.yScale
+    private val xzStep = xzScale / sampling.xzFactor
+    private val yStep = yScale / sampling.yFactor
 
     private var minLimitPerlinNoise: OctavePerlinNoise
     private var maxLimitPerlinNoise: OctavePerlinNoise
@@ -30,22 +40,7 @@ class TerrainGenerator(val biomeSource: BiomeSource, val version: MCVersion = bi
         mainPerlinNoise     = OctavePerlinNoise(rand, 8)
     }
 
-    fun getDepthAndScale(x: Int, z: Int): DoubleArray {
-        val height = biomeSource.getHeight(x, z)
-
-        val depth = height - 8.0
-        val scale = if (depth > 0.0) 0.25 else 1.0
-
-        return doubleArrayOf(depth, scale)
-    }
-
     fun sampleNoise(x: Int, y: Int, z: Int): Double {
-        val xzScale = 684.412 * 2.0
-        val yScale  = 684.412 * 1.0
-
-        val xzStep = xzScale / 80.0
-        val yStep  = yScale / 160.0
-
         var minNoise = 0.0
         var maxNoise = 0.0
         var mainNoise = 0.0
@@ -84,6 +79,8 @@ class TerrainGenerator(val biomeSource: BiomeSource, val version: MCVersion = bi
         )
     }
 
+    protected abstract fun computeNoiseColumn(x: Int, z: Int): DoubleArray
+
     private val noiseColumnCache = object : LinkedHashMap<Long, DoubleArray>(256, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Long, DoubleArray>) = size > 4096
     }
@@ -92,22 +89,7 @@ class TerrainGenerator(val biomeSource: BiomeSource, val version: MCVersion = bi
         val key = (x.toLong() shl 32) or (z.toLong() and 0xFFFFFFFFL)
         synchronized(noiseColumnCache) { noiseColumnCache[key] }?.let { return it }
 
-        val column = run {
-            val buffer = DoubleArray(noiseSizeY + 1)
-            val (depth, scale) = getDepthAndScale(x, z)
-            val fallOff = depth * scale
-
-            for (y in 0..noiseSizeY) {
-                var noise = sampleNoise(x, y, z)
-
-                noise += if (fallOff > 0.0) fallOff * 4.0 else fallOff
-
-                noise = Utils.clampedLerp(-3000.0, noise, ((noiseSizeY - y).toDouble() - -46.0) / 64.0)
-                noise = Utils.clampedLerp(-30.0, noise, (y.toDouble() - 1.0) / 7.0)
-                buffer[y] = noise
-            }
-            buffer
-        }
+        val column = computeNoiseColumn(x, z)
         synchronized(noiseColumnCache) { noiseColumnCache[key] = column }
         return column
     }
@@ -116,13 +98,7 @@ class TerrainGenerator(val biomeSource: BiomeSource, val version: MCVersion = bi
         return if (noise > 0.0) defaultBlock else defaultFluid
     }
 
-    private val floatTerrain: FloatEndTerrain? =
-        if (version >= MCVersion.V26_3) FloatEndTerrain(biomeSource) else null
-
-    fun generateColumn(x: Int, z: Int): List<Int> {
-        floatTerrain?.let { terrain ->
-            return terrain.densityColumn(x, z).map { if (it > 0.0f) defaultBlock else defaultFluid }
-        }
+    open fun generateColumn(x: Int, z: Int): List<Int> {
         val blocks = MutableList(worldHeight) { defaultFluid }
 
         val cellX = Math.floorDiv(x, chunkWidth)
@@ -179,6 +155,7 @@ class TerrainGenerator(val biomeSource: BiomeSource, val version: MCVersion = bi
             else -> topY
         }
     }
+
     fun isChunkEmpty(chunkX: Int, chunkZ: Int): Boolean {
         for (dx in 0 until 16) {
             for (dz in 0 until 16) {

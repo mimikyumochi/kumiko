@@ -73,7 +73,7 @@ class GatewayLabels(world: Node, private val camera: FlyCamera, private val chun
 
         mesh.generate {
             color = Color.WHITE
-            for (gateway in chunks.features.innerGateways) {
+            for (gateway in chunks.features?.innerGateways.orEmpty()) {
                 centre.set(gateway.x + 0.5f, INNER_GATEWAY_Y + 3f, gateway.z + 0.5f)
                 val dx = centre.x - cam.position.x
                 val dz = centre.z - cam.position.z
@@ -99,7 +99,7 @@ class GatewayLabels(world: Node, private val camera: FlyCamera, private val chun
     private fun updateLinks() {
         val features = chunks.features
         if (features !== linksFor) { links.clear(); linksFor = null; linkedIndex = -1 }
-        if (!features.exits.isDone) return
+        if (features == null || !features.exits.isDone) return
         val exits = runCatching { features.exits.getNow(null) }
             .onFailure { if (linksFor == null) System.err.println("Couldn't find the gateway exits: $it") }
             .getOrNull()

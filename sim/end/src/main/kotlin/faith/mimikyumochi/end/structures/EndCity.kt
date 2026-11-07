@@ -1,10 +1,10 @@
 package faith.mimikyumochi.end.structures
 
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.end.biome.EndBiomeSource
 import faith.mimikyumochi.core.block.BlockRotation
 import faith.mimikyumochi.core.block.CPos
 import faith.mimikyumochi.core.rand.Rand
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
 
 class EndCity {
     val spacing = 20
@@ -18,7 +18,7 @@ class EndCity {
         fun getLegacyHeightRotation(chunkX: Int, chunkZ: Int): BlockRotation =
             BlockRotation.getRandom(Rand((chunkX + chunkZ * 10387313).toLong()))
 
-        fun getLowestYIn5by5BoxOffset7Blocks(terrainGenerator: TerrainGenerator,
+        fun getLowestYIn5by5BoxOffset7Blocks(terrainGenerator: EndTerrainGenerator,
                                              chunkX: Int,
                                              chunkZ: Int,
                                              rotation: BlockRotation
@@ -51,7 +51,7 @@ class EndCity {
         return biome == "end_midlands" || biome == "end_highlands"
     }
 
-    fun canSpawn(chunkX: Int, chunkZ: Int, source: BiomeSource): Boolean {
+    fun canSpawn(chunkX: Int, chunkZ: Int, source: EndBiomeSource): Boolean {
         return isValidBiome(source.sampleBiome((chunkX shl 2) + 2, (chunkZ shl 2) + 2))
     }
 

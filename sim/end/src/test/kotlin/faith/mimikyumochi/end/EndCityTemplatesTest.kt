@@ -1,11 +1,11 @@
 package faith.mimikyumochi.end
 
 import faith.mimikyumochi.core.version.MCVersion
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.end.biome.EndBiomeSource
 import faith.mimikyumochi.end.structures.EndCity
 import faith.mimikyumochi.end.structures.EndCityGenerator
 import faith.mimikyumochi.end.structures.EndCityTemplates
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -40,8 +40,8 @@ class EndCityTemplatesTest {
     @Test
     fun blocksStayInsideTheirPieces() {
         val seed = 1L
-        val biomes = BiomeSource(seed, MCVersion.V26_3)
-        val terrain = TerrainGenerator(biomes)
+        val biomes = EndBiomeSource(seed, MCVersion.V26_3)
+        val terrain = EndTerrainGenerator(biomes)
         val city = EndCity()
         var cities = 0
         val rotations = HashSet<Any>()

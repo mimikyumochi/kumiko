@@ -9,7 +9,7 @@ import faith.mimikyumochi.core.block.CPos
 import faith.mimikyumochi.core.rand.Rand
 import faith.mimikyumochi.core.structure.StructureTemplate
 import faith.mimikyumochi.core.version.MCVersion
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
 
 class EndCityGenerator {
     val pieces = mutableListOf<Piece>()
@@ -30,7 +30,7 @@ class EndCityGenerator {
         generateRecursively(towerGenerator, 1, base, null, pieces, rand)
     }
 
-    fun generate(terrainGenerator: TerrainGenerator, chunk: CPos, version: MCVersion = MCVersion.LATEST): Boolean {
+    fun generate(terrainGenerator: EndTerrainGenerator, chunk: CPos, version: MCVersion = MCVersion.LATEST): Boolean {
         reset()
 
         val rand = Rand(0)

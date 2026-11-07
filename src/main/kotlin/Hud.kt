@@ -9,8 +9,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Time
 import faith.mimikyumochi.core.version.MCVersion
-import faith.mimikyumochi.end.biome.BiomeSource
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.nether.terrain.NetherTerrainGenerator
 import java.util.Locale
 import kotlin.math.floor
 
@@ -33,6 +32,7 @@ class Hud(
 
     private var seedField: TextFieldScope? = null
     private val versionIndex = mutableStateOf(VERSIONS.indexOf(chunks.terrain.version))
+    private val dimension = mutableStateOf(Dimension.END)
 
     private var biomeAt: Pair<Any, Triple<Int, Int, Int>>? = null
     private var pendingTitle: Long? = null
@@ -77,6 +77,24 @@ class Hud(
                             versionIndex.set(it)
                             loadWorld(chunks.terrain.worldSeed, VERSIONS[it])
                         }
+                }
+            }
+            Row {
+                modifier.margin(top = sizes.smallGap)
+                Text("Dimension: ") { modifier.alignY(AlignmentY.Center) }
+                for (option in Dimension.entries) {
+                    RadioButton(dimension.use() == option) {
+                        modifier
+                            .alignY(AlignmentY.Center)
+                            .margin(end = sizes.smallGap)
+                            .onToggle { if (it) selectDimension(option) }
+                    }
+                    Text(option.label) {
+                        modifier
+                            .alignY(AlignmentY.Center)
+                            .margin(end = sizes.gap)
+                            .onClick { selectDimension(option) }
+                    }
                 }
             }
             Row {
@@ -159,6 +177,10 @@ class Hud(
                     surface.isVisible = !surface.isVisible
                     gatewayLabels.isVisible = surface.isVisible
                 } else if (ev.keyCode == KeyboardInput.KEY_F4 && ev.isPressed) {
+                    if (dimension.value != Dimension.END) {
+                        showMessage("Exit gateways are in the End")
+                        continue
+                    }
                     chunks.showExits = !chunks.showExits
                     showMessage(if (chunks.showExits) "Showing exit gateways" else "Hiding exit gateways")
                 } else if (ev.keyCode == KeyboardInput.KEY_F3) {
@@ -177,8 +199,8 @@ class Hud(
     }
 
     private fun tpCommand(): String = String.format(
-        Locale.ROOT, "/execute in minecraft:the_end run tp @s %.2f %.2f %.2f %.2f %.2f",
-        camera.position.x, camera.feetY, camera.position.z, camera.yaw, camera.pitch,
+        Locale.ROOT, "/execute in minecraft:%s run tp @s %.2f %.2f %.2f %.2f %.2f",
+        dimension.value.id, camera.position.x, camera.feetY, camera.position.z, camera.yaw, camera.pitch,
     )
 
     private fun teleport(input: String): Boolean {
@@ -189,9 +211,9 @@ class Hud(
             return false
         }
         camera.goTo(target.x, target.y, target.z, target.yaw, target.pitch)
-        val dimension = Regex("""\bin\s+(\S+)""").find(input)?.groupValues?.get(1)
-        if (dimension != null && dimension.removePrefix("minecraft:") != "the_end") {
-            showMessage("Teleported, but that position is in $dimension, not the End")
+        val otherDimension = Regex("""\bin\s+(\S+)""").find(input)?.groupValues?.get(1)
+        if (otherDimension != null && otherDimension.removePrefix("minecraft:") != dimension.value.id) {
+            showMessage("Teleported, but that position is in $otherDimension, not ${dimension.value.label}")
         } else {
             showMessage(String.format(Locale.ROOT, "Teleported to %.2f, %.2f, %.2f", target.x, target.y, target.z))
         }
@@ -204,12 +226,28 @@ class Hud(
         loadWorld(seed, chunks.terrain.version)
     }
 
-    private fun loadWorld(seed: Long, version: MCVersion) {
-        chunks.reset(TerrainGenerator(BiomeSource(seed, version)))
+    private fun selectDimension(option: Dimension) {
+        if (option == dimension.value) return
+        dimension.set(option)
+        loadWorld(chunks.terrain.worldSeed, chunks.terrain.version)
+        val terrain = chunks.terrain
+        if (terrain is NetherTerrainGenerator) {
+            val (x, y) = netherOpening(terrain)
+            camera.goTo(x + 0.5, y.toDouble(), 0.5, yaw = 0f, pitch = 0f)
+        } else {
+            camera.goTo(0.0, 200.0, 0.0, yaw = 0f, pitch = 90f)
+        }
+    }
+
+    private fun loadWorld(seed: Long, requested: MCVersion) {
+        val version = maxOf(requested, dimension.value.firstVersion)
+        versionIndex.set(VERSIONS.indexOf(version))
+        chunks.reset(dimension.value.terrain(seed, version))
         biomeAt = null
         pendingTitle = seed
         titleFrames = 3
-        showMessage("Loaded seed $seed for ${versionLabel(version)}")
+        val note = if (version != requested) " (${dimension.value.label} needs ${versionLabel(version)} or newer here)" else ""
+        showMessage("Loaded seed $seed for ${versionLabel(version)}$note")
     }
 
     private fun biomeAt(blockX: Int, blockY: Int, blockZ: Int): String {

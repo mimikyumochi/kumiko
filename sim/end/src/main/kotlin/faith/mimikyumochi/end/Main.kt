@@ -1,13 +1,13 @@
 package faith.mimikyumochi.end
 
-import faith.mimikyumochi.end.biome.BiomeSource
+import faith.mimikyumochi.end.biome.EndBiomeSource
 import faith.mimikyumochi.core.block.BPos
 import faith.mimikyumochi.core.block.CPos
 import faith.mimikyumochi.core.block.RPos
 import faith.mimikyumochi.end.structures.EndCity
 import faith.mimikyumochi.end.structures.EndCityGenerator
 import faith.mimikyumochi.end.structures.EndGateway
-import faith.mimikyumochi.end.terrain.TerrainGenerator
+import faith.mimikyumochi.end.terrain.EndTerrainGenerator
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
 import java.io.File
@@ -16,7 +16,7 @@ import javax.imageio.ImageIO
 fun renderEndMap(
     width: Int, height: Int,
     centreX: Int, centreZ: Int,
-    terrainGenerator: TerrainGenerator
+    terrainGenerator: EndTerrainGenerator
 ): BufferedImage {
     val img = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
     val data = (img.raster.dataBuffer as DataBufferInt).data
@@ -84,8 +84,8 @@ fun main() {
     val endCityGenerator = EndCityGenerator()
     val endGateway = EndGateway()
 
-    val source = BiomeSource(seed)
-    val terrain = TerrainGenerator(source)
+    val source = EndBiomeSource(seed)
+    val terrain = EndTerrainGenerator(source)
 
     val region = BPos(1024, 0, 1696).toChunkPos().toRegionPos(endCity.spacing)
     val chunk = endCity.getInRegion(region.x, region.z, seed)
