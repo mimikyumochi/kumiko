@@ -59,7 +59,15 @@ to run the tests:
 - all 20 gateways, and the order they open in
 - chorus plants
 
-**the overworld and the nether** are planned.
+**the nether** has basic support, for every version from 1.16 to 26.3. this includes:
+
+- the terrain and lava sea
+- biomes
+- caves
+
+it doesn't have surface blocks, features or structures yet, so the terrain is all netherrack.
+
+**the overworld** is planned.
 
 ![the main island, with each gateway numbered by the dragon kill that opens it](docs/images/main-island.png)
 
@@ -80,6 +88,8 @@ to run the tests:
 | f4 | show the end's exit gateways |
 
 to load a seed, type it into the box in the top-left corner and press enter.
+
+to switch dimension, pick one in the box in the top-left corner.
 
 to go to a spot from your game, press f3 + c in minecraft and paste the command into kumiko's teleport box. f3 + c in kumiko works the other way, so you can paste its command into the game's chat.
 
